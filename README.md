@@ -1,19 +1,7 @@
-# delta-force-topdown
+# DELTA FORCE TOPDOWN PAGES
 
-A browser-based 2D top-down shooter inspired by the original mockup, with a richer map, boss encounter, missions, crate opening, weapons, and sniper scope.
+The clean GitHub Pages build now uses one cohesive tactical compound map: connected roads, six buildings with room plans and doors, extraction depot, motor pool, cover, trees and rocks.
 
-Features:
-- 12 different crate variants
-- Start screen open-crate flow
-- Detailed top-down map layout with obstacles and cover
-- Boss NPC and hostile enemies
-- Weapon switching: pistol, rifle, sniper, shotgun
-- Mission panel and minimap
-- Improved sniper scope and recoil feel
-- Crate opening animation
+Visual upgrades include compact screenshot-inspired HUD spacing, military green/sand/amber colors, weapon silhouettes, a stronger armored commander boss, enemy silhouettes, muzzle/recoil feedback, sniper scope, and a staged crate reveal.
 
-Run locally:
-
-1. Open `index.html` directly in your browser, or
-2. From this folder run: `python -m http.server 8000`
-3. Visit `http://localhost:8000`
+Controls: WASD move, mouse aim, left click fire, R reload, buttons or 1-4 switch weapons.
