@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYSTEM_OVERRIDE_INITIATED</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #050505;
+            color: #00ff33;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            user-select: none;
+        }
+
+        /* Scanline effect */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 99999;
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none;
+        }
+
+        header {
+            border-bottom: 2px dashed #00ff33;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            text-shadow: 0 0 5px #00ff33;
+        }
+
+        #grid-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: 2fr 1fr;
+            gap: 20px;
+            flex-grow: 1;
+            height: calc(100vh - 100px);
+        }
+
+        .panel {
+            border: 1px solid #005511;
+            background-color: rgba(0, 10, 0, 0.85);
+            padding: 15px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 0 15px rgba(0, 255, 50, 0.1);
+        }
+
+        .panel-title {
+            position: absolute;
+            top: 0;
+            left: 10px;
+            transform: translateY(-50%);
+            background: #050505;
+            padding: 0 5px;
+            font-size: 0.8rem;
+            color: #00aa22;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Console Output styling */
+        #console {
+            grid-row: 1 / 3;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        #log-container {
+            overflow-y: auto;
+            max-height: 100%;
+            padding-right: 5px;
+        }
+
+        #log-container::-webkit-scrollbar {
+            width: 5px;
+        }
+        #log-container::-webkit-scrollbar-thumb {
+            background: #005511;
+        }
+
+        .line {
+            margin-bottom: 4px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .success { color: #00ff33; text-shadow: 0 0 3px #00ff33; }
+        .warn { color: #ffcc00; text-shadow: 0 0 3px #ffcc00; }
+        .crit { color: #ff3333; text-shadow: 0 0 5px #ff3333; font-weight: bold; }
+        .info { color: #00bfff; }
+
+        /* Matrix Rain Panel */
+        #matrix-panel {
+            grid-column: 2;
+            grid-row: 1;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.4;
+        }
+
+        /* Status / Progress Panel */
+        #status-panel {
+            grid-column: 2;
+            grid-row: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-bar {
+            width: 60%;
+            border: 1px solid #00ff33;
+            height: 15px;
+            position: relative;
+            background: #001100;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #00ff33;
+            width: 0%;
+            transition: width 0.4s ease;
+            box-shadow: 0 0 8px #00ff33;
+        }
+
+        /* Final Troll Pop-up Overlay */
+        #troll-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 100000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            color: #ff3333;
+            border: 10px solid #ff3333;
+        }
+
+        #troll-overlay h1 {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px #ff3333;
+            animation: blink 0.8s infinite alternate;
+        }
+
+        #troll-overlay p {
+            font-size: 1.5rem;
+            color: #ffffff;
+            font-family: sans-serif;
+        }
+
+        @keyframes blink {
+            from { opacity: 1; }
+            to { opacity: 0.2; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>MAIN_FRAME_DECRYPTOR v4.092</div>
+        <div id="clock">STABLE_CONNECTION</div>
+    </header>
+
+    <div id="grid-container">
+        <!-- Live Console Terminal -->
+        <div class="panel" id="console">
+            <span class="panel-title">Live Terminal Output</span>
+            <div id="log-container"></div>
+        </div>
+
+        <!-- Matrix Code Fall Visualizer -->
+        <div class="panel" id="matrix-panel">
+            <span class="panel-title">Node Network Stream</span>
+            <canvas id="matrixCanvas"></canvas>
+        </div>
+
+        <!-- Systems Status and Progress bars -->
+        <div class="panel" id="status-panel">
+            <span class="panel-title">Task Progress</span>
+            <div class="stat-row">
+                <span>BYPASSING FIREWALL:</span>
+                <div class="progress-bar"><div class="progress-fill" id="p1"></div></div>
+            </div>
+            <div class="stat-row">
+                <span>INJECTING EXPLOIT:</span>
+                <div class="progress-bar"><div class="progress-fill" id="p2"></div></div>
+            </div>
+            <div class="stat-row">
+                <span>EXTRACTING DATA:</span>
+                <div class="progress-bar"><div class="progress-fill" id="p3"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- The actual troll screen triggered at the end -->
+    <div id="troll-overlay" id="trollScreen">
+        <h1>⚠️ SYSTEM COMPROMISED ⚠️</h1>
+        <p>Just kidding. You've been trolled! 😉</p>
+        <p style="font-size: 1rem; margin-top: 20px; color: #888;">No files were harmed in the making of this prank.</p>
+    </div>
+
+    <script>
+        // --- 1. TERMINAL TEXT GENERATOR ---
+        const logContainer = document.getElementById('log-container');
+        
+        const logs = [
+            { text: "[INIT] Establishing secure proxy link via Tor routing...", type: "info" },
+            { text: "[OK] Tunnel active: Node-772.X99.IP_MASKED", type: "success" },
+            { text: "[WARN] Target firewall detected: Sentinel Shield v8.4", type: "warn" },
+            { text: "[EXEC] Deploying multi-threaded buffer overflow string...", type: "info" },
+            { text: ">> 0x7FFFCC23A -> Overwriting register EAX...", type: "line" },
+            { text: ">> 0x7FFFCC24F -> Injecting payload signature...", type: "line" },
+            { text: "[SUCCESS] Security layer 1 breached successfully.", type: "success" },
+            { text: "[INIT] Mapping local directory structures...", type: "info" },
+            { text: "Found: /User/Documents/Confidential_Financials.xlsx", type: "warn" },
+            { text: "Found: /User/Pictures/Embarrassing_Selfies/", type: "warn" },
+            { text: "Found: /System32/Drivers/Core_Kernel.sys", type: "warn" },
+            { text: "[EXEC] Initiating brute-force decryption on Master Key...", type: "info" },
+            { text: "Trying hashes: [SHA-256] Match failure (0.002s)", type: "line" },
+            { text: "Trying hashes: [SHA-256] Match failure (0.001s)", type: "line" },
+            { text: "Trying hashes: [SHA-256] Match failure (0.004s)", type: "line" },
+            { text: "[CRIT] ALARM TRIGGERED: Intrusion Detection System alert active!", type: "crit" },
+            { text: "[EXEC] Deploying counter-measure scripts to mask hardware MAC...", type: "info" },
+            { text: "[SUCCESS] IDS signal rerouted to dead-end server in Antarctica.", type: "success" },
+            { text: "[PROGRESS] Cracking password hash database...", type: "info" },
+            { text: ">> Admin account matching: 34%...", type: "line" },
+            { text: ">> Admin account matching: 67%...", type: "line" },
+            { text: ">> Admin account matching: 99%...", type: "line" },
+            { text: "[SUCCESS] Root access granted. Host completely vulnerable.", type: "success" },
+            { text: "[INIT] Downloading system core architecture...", type: "info" },
+            { text: "Downloading: [████████████████████] 100% - Done.", type: "success" },
+            { text: "[CRIT] TOTAL SYSTEM OVERRIDE IN 3... 2... 1...", type: "crit" }
+        ];
+
+        let logIndex = 0;
+        function printLog() {
+            if (logIndex < logs.length) {
+                const currentData = logs[logIndex];
+                const lineElem = document.createElement('div');
+                lineElem.className = 'line ' + (currentData.type || '');
+                lineElem.textContent = currentData.text;
+                logContainer.appendChild(lineElem);
+                
+                // Keep scrolled to bottom
+                logContainer.scrollTop = logContainer.scrollHeight;
+                
+                // Sync progress bars based on how far the script is
